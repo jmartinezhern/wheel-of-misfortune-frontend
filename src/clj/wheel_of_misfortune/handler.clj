@@ -35,6 +35,9 @@
   (reitit-ring/ring-handler
    (reitit-ring/router
     [["/" {:get {:handler index-handler}}]
+     ["/search" {:get {:handler index-handler}}]
+     ["/browse" {:get {:handler index-handler}}]
+     ["/upload" {:get {:handler index-handler}}]
      ["/scenarios"
       ["" {:get {:handler index-handler}}]
       ["/:scenario-id" {:get {:handler index-handler

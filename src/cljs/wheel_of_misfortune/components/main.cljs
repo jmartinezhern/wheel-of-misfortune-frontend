@@ -1,8 +1,15 @@
 (ns wheel-of-misfortune.components.main
   "Primary components used by the web application."
+  (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [reagent.core :as r]
+            [clojure.string :refer [blank?]]
+            [cljs.core.async :refer [<!]]
             [reagent.session :as session]
+            [wheel-of-misfortune.http.client :as client]
             [wheel-of-misfortune.routes :refer [path-for]]))
+
+(def query (r/atom ""))
+(def results (r/atom []))
 
 ;; -------------------------
 ;; Page components
@@ -20,9 +27,17 @@
       [:a {:href (path-for :upload)} "Upload a scenario"]]]))
 
 (defn search []
-  (fn []
-    [:spain.main
-     [:input]]))
+  [:span.main
+   [:input
+    {:on-change #(reset! query (-> % .-target .-value))}]
+   [:button
+    {:on-click (fn []
+                 (when (not (blank? @query))
+                   (go (let [{:keys [body]} (<! (client/fetch-scenarios {:tags @query}))]
+                         (reset! results (vec body))))))}
+    "Search"]
+   [:ul (map (fn [{:keys [id name description]}]
+               [:div [:p id] [:p name] [:p description]]) @results)]])
 
 (defn upload []
   (fn []
@@ -46,8 +61,10 @@
 (defn command-history [history]
   (add-watch history :area-update
              (fn [_ _ _ _]
-               (let [elm (.getElementById js/document "command-history")
-                     scroll-height (.-scrollHeight elm)]
+               (let [elm
+                     (.getElementById js/document "command-history")
+                     scroll-height
+                     (.-scrollHeight elm)]
                  (set! (.-scrollTop elm) scroll-height))))
   (fn []
     [:div
