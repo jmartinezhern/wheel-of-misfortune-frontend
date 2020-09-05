@@ -73,16 +73,16 @@
 
 (defn command-line [command history]
   (fn []
-     [:input
-      {:id        "command-line"
-       :class     "command-text"
-       :type      "text"
-       :value     (str "> " @command)
-       :on-change #(reset! command (subs (-> % .-target .-value) 2))
-       :on-key-up #(when (= (.-which %) 13)
-                     (reset! history
-                             (str @history "\n" @command))
-                     (reset! command ""))}]))
+    [:input
+     {:id        "command-line"
+      :class     "command-text"
+      :type      "text"
+      :value     (str "> " @command)
+      :on-change #(reset! command (subs (-> % .-target .-value) 2))
+      :on-key-up #(when (= (.-which %) 13)
+                    (reset! history
+                            (str @history "\n" @command))
+                    (reset! command ""))}]))
 
 (def command-edit (with-meta command-line {:component-did-mount #(.focus (rdom/dom-node %))}))
 
@@ -92,10 +92,11 @@
         command (r/atom "")
         history (r/atom "")
         scenario (r/atom {})]
-    (go (let [{:keys [body]} (<! (client/fetch-scenario scenario-id))]
-          (reset! scenario body)))
+    (go (let [{{:keys [states start] :as body} :body} (<! (client/fetch-scenario scenario-id))]
+          (reset! scenario body)
+          (reset! history (:output (start states)))))
     (fn []
       [:span
-       [:h2 (:name @scenario)]
+       [:h2#scenario-title (:name @scenario)]
        [command-history history]
        [:div [command-edit command history]]])))

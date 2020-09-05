@@ -1,52 +1,57 @@
 .body-container {
-  font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
-  margin: 20px;
-  -webkit-font-smoothing: antialiased;
-  font-size: 1.125em;
-  color: #fff;
-  background: #000;
-  line-height: 1.5em;
+    font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
+    margin: 20px;
+    -webkit-font-smoothing: antialiased;
+    font-size: 1.125em;
+    color: #fff;
+    background: #000;
+    line-height: 1.5em;
+    font-family: Arial
 }
 
 h1 {
-  font-size: 2.5em
+    font-size: 2.5em;
 }
 
 h2 {
-  font-size: 2em
+    font-size: 2em;
+    margin: 0;
 }
 
 h3 {
-  font-size: 1.5em
+    font-size: 1.5em
 }
 
 a {
-  text-decoration: none;
-  color: #09f;
+    text-decoration: none;
+    color: #09f;
 }
 
-.main-page-item > a {
+.main-page-item>a {
     display: block;
     text-decoration: none;
     color: #000;
     background: #fff;
     width: 200px;
-    height: 100px;
-    line-height: 100px;
+    height: 80px;
+    line-height: 80px;
     text-align: center;
     vertical-align: middle;
+    border: 1px solid #fff;
+    border-radius: 10px;
 }
 
-.main-page-item > a:hover {
+.main-page-item>a:hover {
     background: #000;
     color: #fff;
 }
 
 
 #command-history {
+    margin-top: 20px;
     resize: none;
     width: 100%;
-    height: 80vh; 
+    height: 80vh;
 }
 
 .command-text {
@@ -60,6 +65,10 @@ a {
 
 #main-title {
     margin-bottom: 80px;
+}
+
+#scenario-title {
+    color: #ff5f58;
 }
 
 #main-page {
