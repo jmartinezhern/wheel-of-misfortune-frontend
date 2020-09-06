@@ -1,12 +1,12 @@
 .body-container {
-    font-family: 'Helvetica Neue', Verdana, Helvetica, Arial, sans-serif;
+    font-family: "Helvetica Neue", Verdana, Helvetica, Arial, sans-serif;
     margin: 20px;
     -webkit-font-smoothing: antialiased;
     font-size: 1.125em;
     color: #fff;
     background: #000;
     line-height: 1.5em;
-    font-family: Arial
+    font-family: Arial;
 }
 
 h1 {
@@ -19,7 +19,7 @@ h2 {
 }
 
 h3 {
-    font-size: 1.5em
+    font-size: 1.5em;
 }
 
 a {
@@ -45,7 +45,6 @@ a {
     background: #000;
     color: #fff;
 }
-
 
 #command-history {
     margin-top: 20px;

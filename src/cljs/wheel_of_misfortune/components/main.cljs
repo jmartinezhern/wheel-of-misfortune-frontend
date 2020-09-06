@@ -71,7 +71,7 @@
                 :value    @history
                 :readOnly true}]))
 
-(defn command-line [command history]
+(defn command-line [command history scenario current]
   (fn []
     [:input
      {:id        "command-line"
@@ -79,10 +79,17 @@
       :type      "text"
       :value     (str "> " @command)
       :on-change #(reset! command (subs (-> % .-target .-value) 2))
-      :on-key-up #(when (= (.-which %) 13)
-                    (reset! history
-                            (str @history "\n" @command))
-                    (reset! command ""))}]))
+      :on-key-up (fn [e]
+                   (when (= (.-which e) 13)
+                     (reset! history
+                             (str @history "\n" @command))
+                     (when-let [{:keys [transition run-after]} (some
+                                                                #(when (= (:match %) @command) %)
+                                                                (:commands @scenario))]
+                       (when (some #(= @current %) run-after)
+                         (reset! history (str @history "\n" (get-in  @scenario [:states transition :output])))
+                         (reset! current transition)))
+                     (reset! command "")))}]))
 
 (def command-edit (with-meta command-line {:component-did-mount #(.focus (rdom/dom-node %))}))
 
@@ -91,12 +98,14 @@
         scenario-id (get-in routing-data [:route-params :scenario-id])
         command (r/atom "")
         history (r/atom "")
-        scenario (r/atom {})]
+        scenario (r/atom {})
+        state (r/atom nil)]
     (go (let [{{:keys [states start] :as body} :body} (<! (client/fetch-scenario scenario-id))]
+          (reset! state start)
           (reset! scenario body)
           (reset! history (:output (start states)))))
     (fn []
       [:span
        [:h2#scenario-title (:name @scenario)]
        [command-history history]
-       [:div [command-edit command history]]])))
+       [:div [command-edit command history scenario state]]])))
