@@ -46,14 +46,14 @@ a {
     color: #fff;
 }
 
-#command-history {
+#history {
     margin-top: 20px;
     resize: none;
     width: 100%;
     height: 80vh;
 }
 
-.command-text {
+.cmd-text {
     border: 0;
     width: 100%;
     font-size: 1em;

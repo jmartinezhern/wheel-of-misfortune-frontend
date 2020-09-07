@@ -7,7 +7,9 @@
             [reitit.frontend :as reitit]
             [wheel-of-misfortune.components.main
              :refer
-             [about-page home-page scenario-page search upload]]
+             [about-page home-page search upload]]
+            [wheel-of-misfortune.components.scenario
+             :as scenario]
             [wheel-of-misfortune.routes :refer [router]]))
 
 ;; ------------------------
@@ -19,7 +21,7 @@
     :upload #'upload
     :search #'search
     :about  #'about-page
-    :scenario   #'scenario-page))
+    :scenario   #'scenario/page))
 
 ;; -------------------------
 ;; Page mounting component
