@@ -9,9 +9,7 @@
             [wheel-of-misfortune.http.client :as client]
             [wheel-of-misfortune.routes :refer [path-for]]))
 
-(def query (r/atom ""))
-(def results (r/atom []))
-(def page-number (r/atom 1))
+
 
 ;; -------------------------
 ;; Page components
@@ -28,29 +26,31 @@
       [:a {:href (path-for :upload)} "Upload a scenario"]]]))
 
 (defn search []
-  (go (let [{:keys [body]} (<! (client/fetch-scenarios {:order-by "oldest"
-                                                        :limit 10}))]
-        (reset! results (vec body))))
-  (fn []
-    [:span.main
-     [:input
-      {:on-change #(reset! query (-> % .-target .-value))}]
-     [:button
-      {:on-click (fn []
-                   (when (not (blank? @query))
-                     (go (let [{:keys [body]} (<! (client/fetch-scenarios {:tags     @query
-                                                                           :order-by "oldest"
-                                                                           :limit    10}))]
-                           (reset! results (vec body))))))}
-      "Search"]
-     [:ul (map (fn [{:keys [id description name]}]
-                 [:li {:key id}
-                  [:p {:href (path-for :scenario {:scenario-id id})}
-                   name]
-                  [:p description]
-                  [:a
-                   {:href (path-for :scenario {:scenario-id id})} "Run"]])
-               @results)]]))
+  (let [query (r/atom "")
+        results (r/atom [])]
+    (go (reset! results (<! (client/fetch-scenarios
+                             {:order-by "oldest"
+                              :limit 10}))))
+    (fn []
+      [:span.main
+       [:input
+        {:on-change #(reset! query (-> % .-target .-value))}]
+       [:button
+        {:on-click (fn []
+                     (when (not (blank? @query))
+                       (go (let [{:keys [body]} (<! (client/fetch-scenarios {:tags     @query
+                                                                             :order-by "oldest"
+                                                                             :limit    10}))]
+                             (reset! results (vec body))))))}
+        "Search"]
+       [:ul (map (fn [{:keys [id description name]}]
+                   [:li {:key id}
+                    [:p {:href (path-for :scenario {:scenario-id id})}
+                     name]
+                    [:p description]
+                    [:a
+                     {:href (path-for :scenario {:scenario-id id})} "Run"]])
+                 @results)]])))
 
 (defn upload []
   (fn []
@@ -71,41 +71,45 @@
                 :value    @history
                 :readOnly true}]))
 
-(defn command-line [command history scenario current]
-  (fn []
-    [:input
-     {:id        "command-line"
-      :class     "command-text"
-      :type      "text"
-      :value     (str "> " @command)
-      :on-change #(reset! command (subs (-> % .-target .-value) 2))
-      :on-key-up (fn [e]
-                   (when (= (.-which e) 13)
-                     (reset! history
-                             (str @history "\n" @command))
-                     (when-let [{:keys [transition run-after]} (some
-                                                                #(when (= (:match %) @command) %)
-                                                                (:commands @scenario))]
-                       (when (some #(= @current %) run-after)
-                         (reset! history (str @history "\n" (get-in  @scenario [:states transition :output])))
-                         (reset! current transition)))
-                     (reset! command "")))}]))
+(defn- transition [cmd state]
+  (:transition (some #(when (= (:match %) cmd) %) (:commands state))))
+
+(defn command-line [scenario history state]
+  (let [command (r/atom "")]
+    (fn []
+      [:input
+       {:id        "command-line"
+        :class     "command-text"
+        :type      "text"
+        :value     (str "> " @command)
+        :on-change #(reset! command (subs (-> % .-target .-value) 2))
+        :on-key-up #(when (= (.-which %) 13)
+                      (let [next (get-in
+                                  @scenario
+                                  [:states (transition @command @state)])]
+                        (reset! history (str @history
+                                             "\n"
+                                             @command
+                                             "\n"
+                                             (:output next)))
+                        (when-not (nil? next)
+                          (reset! state next))
+                        (reset! command "")))}])))
 
 (def command-edit (with-meta command-line {:component-did-mount #(.focus (rdom/dom-node %))}))
 
 (defn scenario-page []
   (let [routing-data (session/get :route)
         scenario-id (get-in routing-data [:route-params :scenario-id])
-        command (r/atom "")
         history (r/atom "")
         scenario (r/atom {})
         state (r/atom nil)]
-    (go (let [{{:keys [states start] :as body} :body} (<! (client/fetch-scenario scenario-id))]
-          (reset! state start)
+    (go (let [{:keys [states start] :as body} (<! (client/fetch-scenario scenario-id))]
+          (reset! state (start states))
           (reset! scenario body)
           (reset! history (:output (start states)))))
     (fn []
       [:span
        [:h2#scenario-title (:name @scenario)]
        [command-history history]
-       [:div [command-edit command history scenario state]]])))
+       [:div [command-edit scenario history state]]])))
