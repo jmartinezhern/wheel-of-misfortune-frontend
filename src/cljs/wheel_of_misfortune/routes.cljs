@@ -12,6 +12,7 @@
     ["/search" :search]
     ["/upload" :upload]
     ["/scenarios"
+     ["/:scenario-id/complete" :complete]
      ["/:scenario-id" :scenario]]
     ["/about" :about]]))
 

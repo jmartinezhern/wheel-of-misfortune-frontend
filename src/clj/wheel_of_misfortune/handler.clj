@@ -40,7 +40,9 @@
      ["/upload" {:get {:handler index-handler}}]
      ["/scenarios"
       ["" {:get {:handler index-handler}}]
-      ["/:scenario-id" {:get {:handler index-handler
+      ["/:scenario-id/complete" {:get {:handler    index-handler
+                                       :parameters {:path {:item-id int?}}}}]
+      ["/:scenario-id" {:get {:handler    index-handler
                               :parameters {:path {:item-id int?}}}}]]
      ["/about" {:get {:handler index-handler}}]])
    (reitit-ring/routes
