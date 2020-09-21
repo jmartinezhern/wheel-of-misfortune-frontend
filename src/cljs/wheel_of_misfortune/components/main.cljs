@@ -57,7 +57,3 @@
 (defn about-page []
   (fn [] [:span.main
           [:h1 "About wheel-of-misfortune"]]))
-
-(defn complete-page []
-  (fn [] [:span.main
-          [:h1 "Complete!"]]))

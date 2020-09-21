@@ -5,14 +5,25 @@
             [reagent.dom :as rdom]
             [cljs.core.async :refer [<!]]
             [reagent.session :as session]
-            [wheel-of-misfortune.http.client :as client]))
+            [wheel-of-misfortune.http.client :as c]))
 
-(def history (r/atom ""))
-(def scenario (r/atom {}))
-(def state (r/atom nil))
+(defonce ^:private history (r/atom ""))
+(defonce ^:private scenario (r/atom {}))
+(defonce ^:private state (r/atom nil))
+(defonce ^:private won (r/atom false))
 
 (defn- scenario-id []
   (get-in (session/get :route) [:route-params :scenario-id]))
+
+(defn- load-scenario []
+  (go
+    (let
+     [id                              (scenario-id)
+      {:keys [states start] :as body} (<! (c/fetch-scenario id))]
+      (reset! state (start states))
+      (reset! scenario body)
+      (reset! history (:output (start states)))
+      (-> (.-localStorage js/window) (.setItem id body)))))
 
 (defn- transition [cmd state]
   (:transition (some #(when (= (:match %) cmd) %) (:commands state))))
@@ -36,8 +47,13 @@
 (defn- next-game-state! [cmd next]
   (cond
     (= cmd "exit")    (accountant/navigate!
-                       (str "/scenarios/" (scenario-id) "/complete"))
-    (not (nil? next)) (reset! state next)))
+                       (str "/scenarios/"
+                            (scenario-id)
+                            "/complete?won="
+                            (if @won "true" "false")))
+    (not (nil? next)) (reset! state next))
+  (when (:terminates next)
+    (reset! won true)))
 
 (defn command-line []
   (let [command (r/atom "")]
@@ -54,7 +70,7 @@
                         (next-game-state! @command next)
                         (reset! history (str @history
                                              "\n"
-                                             @command
+                                             (str "> " @command)
                                              "\n"
                                              output))
 
@@ -64,11 +80,7 @@
                     {:component-did-mount #(.focus (rdom/dom-node %))}))
 
 (defn page []
-  (go
-    (let [{:keys [states start] :as body} (<! (client/fetch-scenario (scenario-id)))]
-      (reset! state (start states))
-      (reset! scenario body)
-      (reset! history (:output (start states)))))
+  (load-scenario)
   (fn []
     [:span
      [:h2#scenario-title (:name @scenario)]

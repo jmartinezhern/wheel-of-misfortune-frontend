@@ -7,7 +7,9 @@
             [reitit.frontend :as reitit]
             [wheel-of-misfortune.components.main
              :refer
-             [about-page complete-page home-page search upload]]
+             [about-page home-page search upload]]
+            [wheel-of-misfortune.components.complete
+             :as complete]
             [wheel-of-misfortune.components.scenario
              :as scenario]
             [wheel-of-misfortune.routes :refer [router]]))
@@ -21,7 +23,7 @@
     :upload   #'upload
     :search   #'search
     :about    #'about-page
-    :complete #'complete-page
+    :complete #'complete/page
     :scenario #'scenario/page))
 
 ;; -------------------------
@@ -50,9 +52,11 @@
     (fn [path]
       (let [match        (reitit/match-by-path router path)
             current-page (:name (:data  match))
-            route-params (:path-params match)]
+            route-params (:path-params match)
+            query-params (:query-params match)]
         (reagent/after-render clerk/after-render!)
         (session/put! :route {:current-page (page-for current-page)
+                              :query-params query-params
                               :route-params route-params})
         (clerk/navigate-page! path)))
     :path-exists?

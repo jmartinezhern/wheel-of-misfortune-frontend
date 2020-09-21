@@ -41,9 +41,10 @@
      ["/scenarios"
       ["" {:get {:handler index-handler}}]
       ["/:scenario-id/complete" {:get {:handler    index-handler
-                                       :parameters {:path {:item-id int?}}}}]
+                                       :parameters {:path  {:scenario-id string?}
+                                                    :query {:won boolean?}}}}]
       ["/:scenario-id" {:get {:handler    index-handler
-                              :parameters {:path {:item-id int?}}}}]]
+                              :parameters {:path {:scenario-id string?}}}}]]
      ["/about" {:get {:handler index-handler}}]])
    (reitit-ring/routes
     (reitit-ring/create-resource-handler {:path "/" :root "/public"})

@@ -27,6 +27,10 @@ a {
     color: #09f;
 }
 
+p {
+    margin: 0;
+}
+
 .main-page-item>a {
     display: block;
     text-decoration: none;
