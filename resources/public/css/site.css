@@ -74,6 +74,27 @@ p {
     color: #ff5f58;
 }
 
+.step-container {
+    margin: 25px 0px;
+}
+
+.square-box {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin: 5px;
+    vertical-align: text-bottom;
+    border-radius: 4px;
+}
+
+.step-title {
+    display: inline;
+}
+
+.step-description {
+    margin-left: 30px;
+}
+
 #main-page {
     display: flex;
     flex-direction: column;

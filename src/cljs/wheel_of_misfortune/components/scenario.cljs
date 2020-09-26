@@ -11,15 +11,26 @@
 (defonce ^:private scenario (r/atom {}))
 (defonce ^:private state (r/atom nil))
 (defonce ^:private won (r/atom false))
+(defonce ^:private transitions (r/atom []))
+
+(defn- navigate-to-complete-page [scenario-id]
+  (accountant/navigate!
+   (str "/scenarios/"
+        (scenario-id)
+        "/complete?won="
+        (if @won "true" "false"))))
+
+(defn- storage-transition-key [id]
+  (str id "-transitions"))
 
 (defn- scenario-id []
   (get-in (session/get :route) [:route-params :scenario-id]))
 
-(defn- load-scenario []
+(defn- load-scenario [id]
   (go
     (let
-     [id                              (scenario-id)
-      {:keys [states start] :as body} (<! (c/fetch-scenario id))]
+     [{:keys [states start] :as body} (<! (c/fetch-scenario id))]
+      (reset! transitions [start])
       (reset! state (start states))
       (reset! scenario body)
       (reset! history (:output (start states)))
@@ -30,7 +41,9 @@
 
 (defn- cmd-output [{:keys [terminates output] :as next}]
   (cond
-    terminates "Scenario complete! Enter 'exit' to continue."
+    terminates (str
+                output
+                "\n\nScenario complete! Enter 'exit' to continue.")
     (nil? next) "Invalid command"
     :else output))
 
@@ -46,11 +59,7 @@
 
 (defn- next-game-state! [cmd next]
   (cond
-    (= cmd "exit")    (accountant/navigate!
-                       (str "/scenarios/"
-                            (scenario-id)
-                            "/complete?won="
-                            (if @won "true" "false")))
+    (= cmd "exit") (navigate-to-complete-page scenario-id)
     (not (nil? next)) (reset! state next))
   (when (:terminates next)
     (reset! won true)))
@@ -63,11 +72,13 @@
         :value     (str "> " @command)
         :on-change #(reset! command (subs (-> % .-target .-value) 2))
         :on-key-up #(when (= (.-which %) 13)
-                      (let [next   (get-in
+                      (let [t      (transition @command @state)
+                            next   (get-in
                                     @scenario
-                                    [:states (transition @command @state)])
+                                    [:states t])
                             output (cmd-output next)]
                         (next-game-state! @command next)
+                        (swap! transitions conj t)
                         (reset! history (str @history
                                              "\n"
                                              (str "> " @command)
@@ -80,9 +91,14 @@
                     {:component-did-mount #(.focus (rdom/dom-node %))}))
 
 (defn page []
-  (load-scenario)
-  (fn []
-    [:span
-     [:h2#scenario-title (:name @scenario)]
-     [command-history history]
-     [:div [command-edit]]]))
+  (let [scenario-id                              (scenario-id)]
+    (load-scenario scenario-id)
+    (add-watch transitions :state-transition
+               (fn [_ _ new _]
+                 (-> (.-localStorage js/window)
+                     (.setItem (storage-transition-key scenario-id) new))))
+    (fn []
+      [:span
+       [:h2#scenario-title (:name @scenario)]
+       [command-history history]
+       [:div [command-edit]]])))
