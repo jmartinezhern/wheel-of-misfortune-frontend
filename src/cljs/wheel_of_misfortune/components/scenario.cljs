@@ -31,7 +31,7 @@
     (let
      [{:keys [states start] :as body} (<! (c/fetch-scenario id))]
       (reset! transitions [start])
-      (reset! state (start states))
+      (reset! state start)
       (reset! scenario body)
       (reset! history (:output (start states)))
       (-> (.-localStorage js/window) (.setItem id body)))))
@@ -39,13 +39,17 @@
 (defn- transition [cmd state]
   (:transition (some #(when (= (:match %) cmd) %) (:commands state))))
 
-(defn- cmd-output [{:keys [terminates output] :as next}]
-  (cond
-    terminates (str
-                output
-                "\n\nScenario complete! Enter 'exit' to continue.")
-    (nil? next) "Invalid command"
-    :else output))
+(defn- cmd-output [t]
+  (let [next   (get-in
+                @scenario
+                [:states t])
+        output (:output next)]
+    (cond
+      (= (:termination @scenario) t) (str
+                                      output
+                                      "\n\nScenario complete! Enter 'exit' to continue.")
+      (nil? next) "Invalid command"
+      :else output)))
 
 (defn- command-history []
   (fn []
@@ -57,11 +61,11 @@
      {:value    @history
       :readOnly true}]))
 
-(defn- next-game-state! [cmd next]
+(defn- next-game-state! [cmd t]
   (cond
     (= cmd "exit") (navigate-to-complete-page scenario-id)
-    (not (nil? next)) (reset! state next))
-  (when (:terminates next)
+    (not (nil? t)) (reset! state t))
+  (when (= (:terminiation @scenario) t)
     (reset! won true)))
 
 (defn command-line []
@@ -72,18 +76,16 @@
         :value     (str "> " @command)
         :on-change #(reset! command (subs (-> % .-target .-value) 2))
         :on-key-up #(when (= (.-which %) 13)
-                      (let [t      (transition @command @state)
-                            next   (get-in
-                                    @scenario
-                                    [:states t])
-                            output (cmd-output next)]
-                        (next-game-state! @command next)
+                      (let [t      (transition @command (get-in
+                                                         @scenario
+                                                         [:states @state]))]
+                        (next-game-state! @command t)
                         (swap! transitions conj t)
                         (reset! history (str @history
                                              "\n"
                                              (str "> " @command)
                                              "\n"
-                                             output))
+                                             (cmd-output t)))
 
                         (reset! command "")))}])))
 

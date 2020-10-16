@@ -18,6 +18,8 @@
      [:h3.step-title title]
      [:p.step-description description]]))
 
+(defn- scenario-solution [])
+
 (defn page []
   (let [scenario-id (get-in (session/get :route) [:route-params :scenario-id])
         won-query   (get-in (session/get :route) [:query-params :won])
@@ -31,11 +33,12 @@
        [:div
         [:h3#scenario-title {:style {:margin-bottom 0}} (:name scenario)]
         [:div
-         (for [transition transitions]
+         (for [transition transitions
+               :let [{:keys [title description]} (get-in scenario [:states
+                                                 transition])]]
            ^{:key transition} [step
-                               (get-in scenario [:states
-                                                 transition
-                                                 :title])
+                               title
+                               description
                                (get-in scenario [:states
                                                  transition
                                                  :description])])]]])))
