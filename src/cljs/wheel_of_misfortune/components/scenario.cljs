@@ -41,7 +41,7 @@
   (fn []
     (r/after-render
      (fn []
-       (when-let [elm (.getElementById js/document "command-history")]
+       (when-let [elm (.getElementById js/document "history")]
          (set! (.-scrollTop elm) (.-scrollHeight elm)))))
     [:textarea#history.cmd-text
      {:value    @history
