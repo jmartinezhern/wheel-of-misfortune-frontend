@@ -7,11 +7,12 @@
             [reitit.frontend :as reitit]
             [wheel-of-misfortune.components.main
              :refer
-             [about-page home-page search upload]]
+             [about-page home-page upload]]
             [wheel-of-misfortune.components.complete
              :as complete]
             [wheel-of-misfortune.components.scenario
              :as scenario]
+            [wheel-of-misfortune.components.scenarios :as scenarios]
             [wheel-of-misfortune.routes :refer [router]]))
 
 ;; ------------------------
@@ -21,7 +22,7 @@
   (case route
     :index    #'home-page
     :upload   #'upload
-    :search   #'search
+    :search   #'scenarios/search
     :about    #'about-page
     :complete #'complete/page
     :scenario #'scenario/page))
@@ -37,7 +38,7 @@
        [page]
        [:footer
         [:p "About Wheel of Misfortune "
-         [:a {:href "https://github.com/jmartinezhern/wheel-of-misfortune-frontend"} "Source Code"] "."]]])))
+         [:a {:href "https://github.com/jmartinezhern/wheel-of-misfortune"} "Source Code"] "."]]])))
 
 ;; -------------------------
 ;; Initialize app

@@ -1,5 +1,5 @@
 (ns wheel-of-misfortune.repl
-  (:use wheel-of-misfortune.handler
+  (:use wheel-of-misfortune.routes.handler
         figwheel-sidecar.repl-api
         ring.server.standalone
         [ring.middleware file-info file]))

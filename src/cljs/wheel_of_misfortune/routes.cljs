@@ -8,13 +8,14 @@
 
 (def router
   (reitit/router
-   [["/" :index]
-    ["/search" :search]
-    ["/upload" :upload]
-    ["/scenarios"
-     ["/:scenario-id/complete" :complete]
-     ["/:scenario-id" :scenario]]
-    ["/about" :about]]))
+   [["/app"
+     ["/" :index]
+     ["/search" :search]
+     ["/upload" :upload]
+     ["/scenarios"
+      ["/:scenario-id/complete" :complete]
+      ["/:scenario-id" :scenario]]
+     ["/about" :about]]]))
 
 (defn path-for [route & [params]]
   (if params

@@ -3,7 +3,7 @@
             [cljs.core.async :refer [>! <! chan go]]
             [clojure.walk :refer [stringify-keys]]))
 
-(def ^:dynamic *base-url* "http://localhost:3000/scenarios")
+(def ^:dynamic *base-url* "http://localhost:3000/api/scenarios")
 
 (def ^:private base-ops {:with-credentials? false
                          :headers {"Accept" "application/edn"}})

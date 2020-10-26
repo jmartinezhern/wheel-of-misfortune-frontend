@@ -5,11 +5,12 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [[org.clojure/clojure "1.10.1"]
+                 [org.postgresql/postgresql "42.2.8"]
                  [cljs-http "0.1.46"]
                  [ring-server "0.5.0"]
                  [reagent "1.0.0-alpha2"]
                  [reagent-utils "0.3.3"]
-                 [ring "1.8.1"]
+                 [ring "1.8.2"]
                  [ring/ring-defaults "0.3.2"]
                  [hiccup "1.0.5"]
                  [yogthos/config "1.1.7"]
@@ -18,6 +19,7 @@
                  [metosin/reitit "0.5.1"]
                  [metosin/jsonista "0.2.6"]
                  [pez/clerk "1.0.0"]
+                 [toucan "1.15.1"]
                  [venantius/accountant "0.2.5"
                   :exclusions [org.clojure/tools.reader]]]
 
@@ -26,7 +28,7 @@
             [lein-asset-minifier "0.4.6"
              :exclusions [org.clojure/clojure]]]
 
-  :ring {:handler wheel-of-misfortune.handler/app
+  :ring {:handler wheel-of-misfortune.routes.handler/app
          :uberwar-name "wheel-of-misfortune.war"}
 
   :min-lein-version "2.5.0"
@@ -72,7 +74,7 @@
    :nrepl-port 7002
    :nrepl-middleware [cider.piggieback/wrap-cljs-repl]
    :css-dirs ["resources/public/css"]
-   :ring-handler wheel-of-misfortune.handler/app}
+   :ring-handler wheel-of-misfortune.routes.handler/app}
 
   :profiles {:dev {:repl-options {:init-ns wheel-of-misfortune.repl}
                    :dependencies [[cider/piggieback "0.5.1"]
